@@ -2,236 +2,304 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini AAPI Pro | التجربة الفاخرة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gemini AAPI Pro | الترسانة الكاملة</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            /* الألوان في الوضع النهاري */
-            --primary-gradient: linear-gradient(135deg, #1a73e8 0%, #701af0 100%);
-            --bg-color: #f8f9fa;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #202124;
-            --chat-bg: #ffffff;
-            --user-bubble: #e8f0fe;
-            --bot-bubble: #f1f3f4;
-            --border: #e0e0e0;
+            --bg: #f8f9fa; --card: #ffffff; --text: #1f1f1f; --primary: #1a73e8;
+            --secondary: #f1f3f4; --user-bubble: #e8f0fe; --bot-bubble: #ffffff;
+            --border: #dee2e6; --accent: linear-gradient(135deg, #1a73e8, #701af0);
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
 
         [data-theme="dark"] {
-            /* الألوان في الوضع الليلي */
-            --bg-color: #0f1114;
-            --card-bg: rgba(30, 31, 38, 0.9);
-            --text-main: #e8eaed;
-            --chat-bg: #1e1f26;
-            --user-bubble: #004a77;
-            --bot-bubble: #2d2f39;
-            --border: #3c4043;
+            --bg: #131314; --card: #1e1f20; --text: #e3e3e3; --primary: #8ab4f8;
+            --secondary: #2d2f31; --user-bubble: #004a77; --bot-bubble: #1e1f20;
+            --border: #444746; --shadow: 0 4px 25px rgba(0,0,0,0.3);
         }
+
+        * { box-sizing: border-box; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
 
         body {
             font-family: 'IBM Plex Sans Arabic', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            color: var(--text-main);
-            transition: all 0.3s ease;
+            background-color: var(--bg); color: var(--text);
+            margin: 0; display: flex; flex-direction: column;
+            height: 100vh; overflow: hidden;
         }
 
-        .container { width: 100%; max-width: 900px; padding: 20px; position: relative; }
-
-        /* الهيدر والأزرار */
-        header { text-align: center; margin-bottom: 20px; }
-        h1 { background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2.2rem; margin: 0; }
-        
-        .theme-toggle {
-            position: absolute; top: 20px; left: 20px;
-            background: var(--card-bg); border: 1px solid var(--border);
-            padding: 8px; border-radius: 50%; cursor: pointer; color: var(--text-main);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        /* --- الهيدر الاحترافي --- */
+        header {
+            padding: 12px 24px; display: flex; justify-content: space-between;
+            align-items: center; background: var(--card); border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow); z-index: 1000;
         }
 
-        .settings-card {
-            background: var(--card-bg); padding: 20px; border-radius: 20px;
-            border: 1px solid var(--border); margin-bottom: 20px;
-            backdrop-filter: blur(10px); display: flex; gap: 10px;
-        }
+        .logo { font-size: 1.4rem; font-weight: 600; background: var(--accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
+        .nav-tools { display: flex; gap: 12px; }
+        .tool-btn {
+            background: var(--secondary); border: none; color: var(--text);
+            width: 42px; height: 42px; border-radius: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .tool-btn:hover { filter: brightness(0.9); transform: translateY(-2px); }
+
+        /* --- لوحة الإعدادات الذكية --- */
+        #settings-panel {
+            background: var(--card); padding: 20px; border-bottom: 1px solid var(--border);
+            display: none; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px; animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: translateY(0); } }
+
+        .input-field { display: flex; flex-direction: column; gap: 5px; }
+        .input-field label { font-size: 12px; font-weight: 600; opacity: 0.7; }
         input {
-            flex: 1; padding: 10px 15px; border: 1px solid var(--border);
-            border-radius: 10px; background: var(--chat-bg); color: var(--text-main);
+            background: var(--secondary); border: 1px solid var(--border);
+            color: var(--text); padding: 12px; border-radius: 10px; font-size: 14px; outline: none;
         }
 
-        /* منطقة الدردشة */
-        #chat-history {
-            height: 450px; overflow-y: auto; background: var(--chat-bg);
-            border-radius: 24px; padding: 20px; margin-bottom: 20px;
-            border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px;
+        /* --- منطقة الدردشة (Scrolling Engine) --- */
+        #chat-viewport {
+            flex-grow: 1; overflow-y: auto; padding: 30px 15% 100px;
+            display: flex; flex-direction: column; gap: 25px; scroll-behavior: smooth;
+        }
+        @media (max-width: 800px) { #chat-viewport { padding: 20px 15px 100px; } }
+
+        .msg-container { display: flex; flex-direction: column; max-width: 90%; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } }
+        
+        .user-align { align-self: flex-start; }
+        .bot-align { align-self: flex-end; }
+
+        .bubble {
+            padding: 16px 20px; border-radius: 24px; font-size: 16px; line-height: 1.8;
+            word-wrap: break-word; white-space: pre-wrap; position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         }
 
-        .message { max-width: 80%; padding: 12px 18px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
-        .user-msg { align-self: flex-start; background: var(--user-bubble); color: var(--text-main); border-bottom-right-radius: 4px; }
-        .bot-msg { align-self: flex-end; background: var(--bot-bubble); color: var(--text-main); border-bottom-left-radius: 4px; }
+        .user-align .bubble { background: var(--user-bubble); border-bottom-right-radius: 4px; border: 1px solid transparent; }
+        .bot-align .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-        /* شريط الإدخال */
-        .input-area {
-            background: var(--chat-bg); border-radius: 30px; padding: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; align-items: center;
-            border: 1px solid var(--border);
+        .msg-actions {
+            display: flex; gap: 10px; margin-top: 8px; opacity: 0; transition: opacity 0.3s;
+        }
+        .msg-container:hover .msg-actions { opacity: 1; }
+
+        .action-link {
+            font-size: 12px; color: var(--primary); cursor: pointer; text-decoration: none;
+            display: flex; align-items: center; gap: 4px; font-weight: 500;
+        }
+
+        /* --- الفوتر وشريط الإدخال --- */
+        .footer-area {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 20px; background: linear-gradient(to top, var(--bg) 60%, transparent);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .input-container {
+            width: 100%; max-width: 800px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 30px;
+            display: flex; align-items: center; padding: 8px 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         textarea {
-            border: none; resize: none; padding: 12px 20px; font-size: 16px;
-            flex-grow: 1; background: transparent; color: var(--text-main); outline: none;
+            flex-grow: 1; background: transparent; border: none; color: var(--text);
+            padding: 10px; font-size: 16px; resize: none; outline: none;
+            max-height: 150px; min-height: 40px; font-family: inherit;
         }
 
         .send-btn {
-            background: #1a73e8; color: white; border: none; width: 45px; height: 45px;
-            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: var(--primary); color: white; border: none;
+            width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
+        .send-btn:disabled { opacity: 0.5; filter: grayscale(1); }
 
-        #loader { display: none; text-align: center; margin-bottom: 10px; font-size: 12px; }
+        #status-bar { font-size: 12px; margin-bottom: 8px; color: var(--primary); font-weight: 600; display: none; }
+
     </style>
 </head>
 <body data-theme="light">
 
-<button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-
-<div class="container">
-    <header>
-        <h1>Gemini AAPI Pro</h1>
-    </header>
-
-    <div class="settings-card">
-        <input type="password" id="token" placeholder="GitHub Token">
-        <input type="text" id="repo" placeholder="User/Repo">
+<header>
+    <div class="logo">Gemini AAPI Pro</div>
+    <div class="nav-tools">
+        <button class="tool-btn" onclick="toggleSettings()" title="الإعدادات">⚙️</button>
+        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
     </div>
+</header>
 
-    <div id="chat-history">
-        <div class="message bot-msg">مرحباً بك في النسخة المطورة! كيف يمكنني مساعدتك اليوم؟</div>
+<div id="settings-panel">
+    <div class="input-field">
+        <label>GitHub Personal Token</label>
+        <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx">
     </div>
+    <div class="input-field">
+        <label>المستودع (User/Repo)</label>
+        <input type="text" id="ghRepo" placeholder="username/repository">
+    </div>
+</div>
 
-    <div id="loader">✨ جاري جلب الرد من خوادم Gemini...</div>
+<div id="chat-viewport">
+    <div class="msg-container bot-align">
+        <div class="bubble">مرحباً بك في نظام Gemini AAPI الكامل. قمت بإصلاح التمرير، ميزة النسخ، والوضع الليلي، مع الحفاظ على هيكلية الـ GitHub API الأصلية. اسألني أي شيء!</div>
+    </div>
+</div>
 
-    <div class="input-area">
-        <textarea id="prompt" rows="1" placeholder="اسأل أي شيء..."></textarea>
-        <button class="send-btn" id="runBtn" onclick="runAutomation()">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+<div class="footer-area">
+    <div id="status-bar">📡 جاري معالجة الطلب عبر GitHub Actions...</div>
+    <div class="input-container">
+        <textarea id="promptInput" rows="1" placeholder="اسأل Gemini..." oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="startProcess()">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
     </div>
 </div>
 
 <script>
-    // نظام التذكر التلقائي والوضع الليلي
+    // 1. إدارة الذاكرة والسمات
     window.onload = () => {
-        document.getElementById('token').value = localStorage.getItem('gh_token') || '';
-        document.getElementById('repo').value = localStorage.getItem('gh_repo') || '';
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.body.setAttribute('data-theme', savedTheme);
+        document.getElementById('ghToken').value = localStorage.getItem('cfg_token') || '';
+        document.getElementById('ghRepo').value = localStorage.getItem('cfg_repo') || '';
+        const theme = localStorage.getItem('cfg_theme') || 'light';
+        document.body.setAttribute('data-theme', theme);
+        document.getElementById('themeBtn').innerText = theme === 'light' ? '🌙' : '☀️';
     };
 
     function toggleTheme() {
         const current = document.body.getAttribute('data-theme');
         const next = current === 'light' ? 'dark' : 'light';
         document.body.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
+        localStorage.setItem('cfg_theme', next);
+        document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
     }
 
-    function saveSettings() {
-        localStorage.setItem('gh_token', document.getElementById('token').value);
-        localStorage.setItem('gh_repo', document.getElementById('repo').value);
+    function toggleSettings() {
+        const panel = document.getElementById('settings-panel');
+        panel.style.display = panel.style.display === 'grid' ? 'none' : 'grid';
     }
 
-    async function runAutomation() {
-        const token = document.getElementById('token').value;
-        const repo = document.getElementById('repo').value;
-        const promptInput = document.getElementById('prompt');
-        const prompt = promptInput.value;
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
 
-        if(!token || !repo || !prompt) return alert("اكمل البيانات أولاً!");
+    // 2. محرك الرسائل
+    function createMessage(text, side) {
+        const viewport = document.getElementById('chat-viewport');
+        const container = document.createElement('div');
+        container.className = `msg-container ${side}-align`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerText = text;
+        container.appendChild(bubble);
 
-        saveSettings();
-        addMessage(prompt, 'user-msg');
-        promptInput.value = '';
-        document.getElementById('loader').style.display = 'block';
-        document.getElementById('runBtn').disabled = true;
+        if(side === 'bot') {
+            const actions = document.createElement('div');
+            actions.className = 'msg-actions';
+            actions.innerHTML = `<span class="action-link" onclick="copyText(this, \`${text.replace(/`/g, '\\`')}\`)">📋 نسخ الرد</span>`;
+            container.appendChild(actions);
+        }
+
+        viewport.appendChild(container);
+        viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
+    }
+
+    async function copyText(el, text) {
+        await navigator.clipboard.writeText(text);
+        const original = el.innerHTML;
+        el.innerHTML = "✅ تم النسخ!";
+        setTimeout(() => el.innerHTML = original, 2000);
+    }
+
+    // 3. محرك الأتمتة (GitHub Integration)
+    async function startProcess() {
+        const token = document.getElementById('ghToken').value;
+        const repo = document.getElementById('ghRepo').value;
+        const input = document.getElementById('promptInput');
+        const prompt = input.value.trim();
+
+        if(!token || !repo || !prompt) return alert("برجاء ملء جميع البيانات!");
+
+        // حفظ الإعدادات
+        localStorage.setItem('cfg_token', token);
+        localStorage.setItem('cfg_repo', repo);
+
+        createMessage(prompt, 'user');
+        input.value = ''; input.style.height = 'auto';
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('status-bar').style.display = 'block';
 
         try {
-            const start = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/gemini_api.yml/dispatches`, {
+            const res = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/gemini_api.yml/dispatches`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ref: 'main', inputs: { prompt: prompt } })
             });
 
-            if(!start.ok) throw new Error("فشل الوصول. تأكد من التوكن وصلاحياته.");
-
-            await monitorRun(repo, token);
+            if(!res.ok) throw new Error("فشل إرسال الطلب. تحقق من التوكن وصلاحياته.");
+            
+            checkStatus(repo, token);
         } catch (e) {
-            addMessage("❌ خطأ: " + e.message, 'bot-msg');
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('runBtn').disabled = false;
+            createMessage("❌ خطأ: " + e.message, 'bot');
+            resetUI();
         }
     }
 
-    async function monitorRun(repo, token) {
-        let completed = false;
-        while (!completed) {
-            await new Promise(r => setTimeout(r, 7000));
+    async function checkStatus(repo, token) {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
             const res = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
-            const lastRun = data.workflow_runs[0];
+            const run = data.workflow_runs[0];
 
-            if (lastRun.status === "completed") {
-                completed = true;
-                if (lastRun.conclusion === "success") {
-                    await fetchAndUnzipResult(repo, lastRun.id, token);
-                } else {
-                    addMessage("❌ فشل السكريبت في إنتاج نتيجة.", 'bot-msg');
-                }
+            if(run && run.status === "completed") {
+                clearInterval(interval);
+                if(run.conclusion === "success") fetchArtifact(repo, run.id, token);
+                else { createMessage("❌ فشل الأكشن في تنفيذ المهمة.", 'bot'); resetUI(); }
             }
-        }
+            if(attempts > 30) { clearInterval(interval); resetUI(); } // مهلة 5 دقائق
+        }, 8000);
     }
 
-    async function fetchAndUnzipResult(repo, runId, token) {
+    async function fetchArtifact(repo, runId, token) {
         try {
-            const artRes = await fetch(`https://api.github.com/repos/${repo}/actions/runs/${runId}/artifacts`, {
+            const res = await fetch(`https://api.github.com/repos/${repo}/actions/runs/${runId}/artifacts`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const artData = await artRes.json();
-            const artifact = artData.artifacts.find(a => a.name === 'gemini-json');
+            const data = await res.json();
+            const art = data.artifacts.find(a => a.name === 'gemini-json');
 
-            const zipRes = await fetch(artifact.archive_download_url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const zipRes = await fetch(art.archive_download_url, { headers: { 'Authorization': `Bearer ${token}` } });
             const blob = await zipRes.blob();
             const jszip = new JSZip();
             const zipContent = await jszip.loadAsync(blob);
-            const jsonFile = await zipContent.file("result.json").async("string");
+            const jsonStr = await zipContent.file("result.json").async("string");
             
-            const finalData = JSON.parse(jsonFile);
-            addMessage(finalData.response, 'bot-msg');
+            createMessage(JSON.parse(jsonStr).response, 'bot');
         } catch (e) {
-            addMessage("❌ فشل استخراج الرد من الملف المضغوط.", 'bot-msg');
+            createMessage("❌ فشل جلب ملف النتيجة النهائي.", 'bot');
         } finally {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('runBtn').disabled = false;
+            resetUI();
         }
     }
 
-    function addMessage(text, className) {
-        const history = document.getElementById('chat-history');
-        const div = document.createElement('div');
-        div.className = `message ${className}`;
-        div.innerText = text;
-        history.appendChild(div);
-        history.scrollTop = history.scrollHeight;
+    function resetUI() {
+        document.getElementById('sendBtn').disabled = false;
+        document.getElementById('status-bar').style.display = 'none';
     }
 </script>
+
 </body>
 </html>
