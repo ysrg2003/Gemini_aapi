@@ -20,20 +20,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_COOKIES: ${{ secrets.GEMINI_COOKIES }}
-          # إعداد المسارات الأساسية
           PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/browsers
           CAMOUFOX_CACHE_DIR: /home/runner/.cache/camoufox
         run: |
-          echo "📥 جاري سحب وفك الترسانة (Zstd Stream)..."
-          # تحميل وفك الضغط
+          echo "📥 جاري سحب وفك الترسانة..."
+          # تحميل وفك الضغط مباشرة في المجلد الحالي
           gh release download v1.0.0 -p "vendor_assets.tar.zst" -O - | tar -I zstd -xf -
           
-          echo "⚙️ إعداد البيئة الموازية..."
-          # 🚀 الإصلاح الجوهري: توجيه بايثون للمكان الصحيح للمكتبات
-          # بما أن المجلدات موجودة داخل python/ فنحن نحتاج هذا المسار تحديداً
-          export PYTHONPATH="${{ github.workspace }}/python"
-          
-          # إعداد الروابط التشعبية للمحرك
+          echo "⚙️ إعداد الروابط والبيئة..."
+          # إعداد الكاش في مسار النظام
           mkdir -p /home/runner/.cache
           ln -sfn ${{ github.workspace }}/camoufox_cache /home/runner/.cache/camoufox
           
@@ -41,8 +36,9 @@ jobs:
           chmod +x browsers/chromium_headless_shell-1208/chrome-headless-shell 2>/dev/null || true
           
           echo "🚀 انطلاق المحرك الرئيسي..."
-          # استخدام python3 النظام مباشرة
-          python3 main.py "${{ github.event.inputs.prompt }}"
+          # الخدعة الكبرى: إجبار بايثون على إضافة مجلد python للمسارات قبل تشغيل الكود
+          # سنستخدم خيار -c لتعديل sys.path برمجياً قبل استدعاء ملفك
+          python3 -c "import sys, os; sys.path.insert(0, os.path.join(os.getcwd(), 'python')); import main" "${{ github.event.inputs.prompt }}"
 
       - name: 📤 Upload Result
         if: always()
