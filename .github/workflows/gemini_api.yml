@@ -1,4 +1,5 @@
-name: Gemini Simple API
+name: Gemini Simple API (High Speed)
+
 on:
   workflow_dispatch:
     inputs:
@@ -9,21 +10,58 @@ on:
 jobs:
   run-system:
     runs-on: ubuntu-latest
+    
+    # تحديد الصلاحيات للسماح بقراءة الـ Releases والتحميل منها
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Python
+      - name: 📂 Checkout Code
+        uses: actions/checkout@v4
+
+      # --- 🚀 ميزة الكاش الفائق ---
+      - name: ⚡ Restore Engine Cache
+        id: cache-vendor
+        uses: actions/cache@v4
+        with:
+          path: vendor_extracted
+          # المفتاح مرتبط بنظام التشغيل وإصدار الأصول (v1.0.0)
+          key: ${{ runner.os }}-vendor-v1.0.0
+
+      # --- 📥 تحميل الأصول فقط في حال عدم وجودها في الكاش ---
+      - name: 📥 Download Assets from Release
+        if: steps.cache-vendor.outputs.cache-hit != 'true'
+        run: |
+          echo "❌ لم يتم العثور على كاش، جاري التحميل من Release..."
+          gh release download v1.0.0 -p "vendor_assets.zip"
+          unzip -q vendor_assets.zip -d vendor_extracted
+          rm vendor_assets.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Run
+      # --- 🛠️ تجهيز البيئة ومنح الصلاحيات ---
+      - name: 🔑 Fix Executable Permissions
+        run: |
+          find vendor_extracted -type f -name "node" -exec chmod +x {} +
+          find vendor_extracted -type f -name "chrome" -exec chmod +x {} +
+          find vendor_extracted -type f -name "firefox" -exec chmod +x {} +
+
+      # --- 🏃 تشغيل المحرك الأساسي ---
+      - name: 🤖 Execute Gemini Automation
         env:
           GEMINI_COOKIES: ${{ secrets.GEMINI_COOKIES }}
         run: python main.py "${{ github.event.inputs.prompt }}"
 
-      - name: Result
+      # --- 📤 رفع النتيجة النهائية ---
+      - name: 📄 Upload Result
+        if: always() # لضمان رفع النتيجة حتى لو حدث خطأ تقني
         uses: actions/upload-artifact@v4
         with:
           name: gemini-json
           path: result.json
+          retention-days: 1 # حذف النتائج القديمة تلقائياً بعد يوم لتوفير المساحة
