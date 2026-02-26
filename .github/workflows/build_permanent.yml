@@ -1,24 +1,24 @@
-name: 🚀 Build Permanent Vendor Assets
-on: workflow_dispatch
+name: 🚀 Build & Release Permanent Assets
+
+on:
+  workflow_dispatch: # تشغيل يدوي عند الحاجة لتحديث المكتبات
+
+permissions:
+  contents: write # صلاحية ضرورية لإنشاء الـ Release ورفع الملفات
 
 jobs:
-  build:
+  build-engine:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # للسماح للأكشن بالرفع للمستودع
     steps:
-      - uses: actions/checkout@v4
+      - name: 📂 Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Download Everything
-        run: python setup_assets.py
-
-# ... (نفس البداية)
-      - name: "Install System Build Dependencies"
+      - name: 🛠️ Install System Build Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -27,13 +27,30 @@ jobs:
             libcairo2-dev \
             libpango1.0-dev \
             pkg-config \
-            libffi-dev
-          # هذه المكتبات تسمح لـ pip ببناء wheel لمكتبة manimpango بنجاح
+            libffi-dev \
+            zip
 
-      - name: Commit and Push Assets
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git add vendor_assets.zip
-          git commit -m "Add permanent compressed assets"
-          git push
+      - name: 📦 Run Setup Assets Script
+        run: python setup_assets.py
+        # ملاحظة: تأكد أن ملف setup_assets.py موجود في المستودع ويقوم بإنشاء vendor_assets.zip
+
+      - name: 🚀 Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "Gemini Engine Assets v1.0.0"
+          body: |
+            تحتوي هذه النسخة على البيئة الكاملة لمحرك Gemini:
+            - Playwright Browsers (Chromium)
+            - Camoufox & Dependencies
+            - Python Libraries (Vendor Folder)
+            يتم استدعاء هذا الـ Release تلقائياً في الـ Workflow الأساسي.
+          draft: false
+          prerelease: false
+          files: vendor_assets.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ✅ Status Check
+        run: echo "تم بناء الأصول ورفعها إلى Release v1.0.0 بنجاح!"
