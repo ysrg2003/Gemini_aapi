@@ -64,10 +64,23 @@ jobs:
       - name: ⚡ Execute Gemini Automation
         env:
           GEMINI_COOKIES: ${{ secrets.GEMINI_COOKIES }}
-          # التأكد من أن البيئة تعرف مكان المجلد المستخرج
-          PYTHONPATH: ${{ github.workspace }}/vendor_extracted/python
         run: |
+          # 1. إنشاء مسار الكاش الافتراضي لنظام لينكس
+          mkdir -p /home/runner/.cache/camoufox
+          
+          # 2. نقل ملفات الترسانة إلى المسار الذي يتوقعه المتصفح افتراضياً
+          if [ -d "vendor_extracted/camoufox_cache" ]; then
+            cp -r vendor_extracted/camoufox_cache/* /home/runner/.cache/camoufox/
+            echo "📦 تمت عملية حقن المحرك بنجاح."
+          fi
+          
+          # 3. إعداد المكتبات البرمجية
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/vendor_extracted/python
+          
+          # 4. التشغيل
           python main.py "${{ github.event.inputs.prompt }}"
+
+      
 
       # --- 📤 رفع النتيجة النهائية ---
       - name: 📄 Upload Result
