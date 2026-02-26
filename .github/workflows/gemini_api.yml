@@ -55,6 +55,9 @@ jobs:
       - name: 🤖 Execute Gemini Automation
         env:
           GEMINI_COOKIES: ${{ secrets.GEMINI_COOKIES }}
+          
+          CAMOUFOX_CACHE_DIR: ${{ github.workspace }}/vendor_extracted/camoufox_cache
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/vendor_extracted/browsers
         run: python main.py "${{ github.event.inputs.prompt }}"
 
       # --- 📤 رفع النتيجة النهائية ---
