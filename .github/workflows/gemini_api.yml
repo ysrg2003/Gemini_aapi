@@ -12,8 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # تم حذف خطوة setup-python لتوفير 11 ثانية، سنستخدم python3 الافتراضي
-      
+      # ⚠️ أعدنا هذه الخطوة لأن المكتبات تم بناؤها خصيصاً للإصدار 3.11
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: 📥 Download & Inject Assets
         run: |
           echo "📥 سحب ملفات المحرك من الـ Release..."
@@ -29,12 +33,12 @@ jobs:
           GEMINI_COOKIES: ${{ secrets.GEMINI_COOKIES }}
           PYTHONPATH: ${{ github.workspace }}/python
           PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/browsers
-          # 🚀 إضافة مسار الكاش لمنع التحميل من الصفر!
+          # 🚀 مسار الكاش الذي سيمنع تحميل الـ 713MB
           CAMOUFOX_CACHE_DIR: ${{ github.workspace }}/camoufox_cache 
         run: |
           echo "🚀 تشغيل الأتمتة..."
-          # استخدام python3 الافتراضي في بيئة أوبونتو
-          python3 main.py "${{ github.event.inputs.prompt }}"
+          # عدنا لاستخدام python بدلاً من python3 لأن setup-python يضبطها تلقائياً
+          python main.py "${{ github.event.inputs.prompt }}"
 
       - name: Result
         uses: actions/upload-artifact@v4
