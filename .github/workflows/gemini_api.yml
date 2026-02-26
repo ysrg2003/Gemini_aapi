@@ -26,10 +26,25 @@ jobs:
 
       - name: 📥 Download Engine Assets
         run: |
-          echo "📥 جاري سحب الترسانة v1.0.0..."
           gh release download v1.0.0 -p "vendor_assets.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Fast Setup & Fix
+        run: |
+          # 1. إنشاء المسار الذي تريده المكتبة
+          mkdir -p /home/runner/.cache/camoufox
+          
+          # 2. فك ضغط "الكاش" مباشرة داخل مسار النظام الافتراضي
+          # هذا يضمن عدم وجود مجلدات وسيطة تسبب "Cleaning up cache"
+          unzip -qo vendor_assets.zip "cache/*" -d .
+          mv cache/* /home/runner/.cache/camoufox/
+          
+          # 3. فك ضغط المكتبات
+          unzip -qo vendor_assets.zip "python/*" -d .
+          echo "✅ تم تجهيز البيئة."
+
+      
 
       - name: 🗜️ Fast Unzip & Injection
         run: |
