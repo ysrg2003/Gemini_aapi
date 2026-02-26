@@ -10,26 +10,26 @@ def setup():
     
     python_dir = os.path.join(current_path, vendor_dir, "python")
     browsers_dir = os.path.join(current_path, vendor_dir, "browsers")
+    # هذا المجلد سيحتوي على محتويات ~/.cache/camoufox بالكامل
     camou_cache_dir = os.path.join(current_path, vendor_dir, "camoufox_cache")
 
-    # تنظيف أي مخلفات سابقة
+    # تنظيف أي مخلفات سابقة لضمان بناء نظيف
     if os.path.exists(vendor_dir):
+        print("🧹 تنظيف مخلفات البناء السابق...")
         shutil.rmtree(vendor_dir)
     
     os.makedirs(python_dir, exist_ok=True)
     os.makedirs(browsers_dir, exist_ok=True)
-    os.makedirs(camou_cache_dir, exist_ok=True)
-    
-    print("⏳ بدأت عملية بناء الترسانة الشاملة...")
-    print(f"📂 مسار الكاش المستهدف: {camou_cache_dir}")
+    # ملاحظة: لا ننشئ camou_cache_dir هنا يدوياً، shutil.copytree ستنشئه لاحقاً
 
-    # 2. إعداد بيئة التنفيذ المؤقتة لعملية التحميل
+    print("⏳ بدأت عملية بناء الترسانة الشاملة (النسخة المحدثة)...")
+
+    # 2. إعداد بيئة التنفيذ
     env = os.environ.copy()
     env["PYTHONPATH"] = python_dir + os.pathsep + env.get("PYTHONPATH", "")
     env["PLAYWRIGHT_BROWSERS_PATH"] = browsers_dir
-    env["CAMOUFOX_CACHE_DIR"] = camou_cache_dir  # إجبار المكتبة على التحميل هنا
 
-    # 3. تثبيت المكتبات البرمجية داخل مجلد vendor
+    # 3. تثبيت المكتبات البرمجية
     print("📦 تثبيت المكتبات (Playwright & Camoufox)...")
     libs = ["playwright", "camoufox", "wheel", "setuptools"]
     subprocess.run([
@@ -45,36 +45,39 @@ def setup():
         sys.executable, "-m", "playwright", "install", "chromium"
     ], env=env, check=True)
     
-    # 5. تحميل محرك Camoufox (الأهم: الـ 713MB)
-    print("🦊 سحب محرك Camoufox الثقيل إلى المجلد المحلي...")
-    # ملاحظة: نستخدم sys.executable مع PYTHONPATH للوصول للمكتبة التي ثبتناها للتو
-    result = subprocess.run([
+    # 5. تحميل محرك Camoufox الثقيل
+    print("🦊 سحب محرك Camoufox إلى المسار الافتراضي...")
+    # نتركه يحمله في المسار الافتراضي ~/.cache/camoufox أولاً لضمان سلامة الملفات
+    subprocess.run([
         sys.executable, "-m", "camoufox", "fetch"
-    ], env=env, capture_output=True, text=True)
+    ], env=env, check=True)
     
-    if result.returncode != 0:
-        print(f"❌ خطأ في تحميل Camoufox: {result.stderr}")
-        sys.exit(1)
+    # نقل الكاش من المسار الافتراضي إلى مجلد الـ vendor الخاص بنا
+    default_cache = os.path.expanduser("~/.cache/camoufox")
+    if os.path.exists(default_cache):
+        print(f"🚚 نقل الكاش من {default_cache} إلى {camou_cache_dir}...")
+        shutil.copytree(default_cache, camou_cache_dir)
     else:
-        print("✅ تم تحميل المحرك بنجاح.")
+        print("❌ خطأ: لم يتم العثور على الكاش المحمل!")
+        sys.exit(1)
 
-    # 6. تنظيف الملفات الزائدة لتقليل حجم الـ ZIP
-    print("🧹 تنظيف الملفات المؤقتة والزائدة...")
+    # 6. تنظيف الملفات الزائدة لتقليل الحجم
+    print("🧹 تنظيف الملفات الزائدة (Pycache & Docs)...")
     for root, dirs, files in os.walk(vendor_dir):
-        for d in ["__pycache__", "tests", "test", "docs"]:
+        for d in ["__pycache__", "tests", "test", "docs", "help"]:
             if d in dirs:
                 shutil.rmtree(os.path.join(root, d))
 
     # 7. عملية الضغط النهائي
-    print(f"🗜️ جاري ضغط الترسانة (حوالي 800MB+)... قد يستغرق هذا دقائق...")
-    # نضغط محتويات مجلد vendor ليكون الاستخراج سهلاً
+    print(f"🗜️ جاري ضغط الترسانة... قد يستغرق هذا دقيقة...")
+    # نستخدم صيغة zip ونضغط محتويات مجلد vendor
     shutil.make_archive("vendor_assets", 'zip', vendor_dir)
     
     if os.path.exists("vendor_assets.zip"):
         size_mb = os.path.getsize("vendor_assets.zip") / (1024 * 1024)
         print(f"✅ تم إنشاء الترسانة بنجاح!")
         print(f"📦 حجم الملف النهائي: {size_mb:.2f} MB")
-        # اختيارياً: حذف مجلد vendor لتوفير مساحة على محرك الأقراص في GitHub
+        # حذف مجلد vendor المؤقت لتوفير مساحة
         shutil.rmtree(vendor_dir)
     else:
         print("❌ فشل إنشاء ملف الـ ZIP!")
