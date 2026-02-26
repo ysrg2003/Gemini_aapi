@@ -1,4 +1,4 @@
-name: Gemini Simple API (High Speed)
+name: Gemini High Speed API
 
 on:
   workflow_dispatch:
@@ -11,60 +11,60 @@ jobs:
   run-system:
     runs-on: ubuntu-latest
     
-    # تحديد الصلاحيات للسماح بقراءة الـ Releases والتحميل منها
+    # الصلاحيات اللازمة للتعامل مع الـ Releases والـ Artifacts
     permissions:
       contents: read
+      actions: write
 
     steps:
       - name: 📂 Checkout Code
         uses: actions/checkout@v4
-
-      # --- 🚀 ميزة الكاش الفائق ---
-      - name: ⚡ Restore Engine Cache
-        id: cache-vendor
-        uses: actions/cache@v4
-        with:
-          path: vendor_extracted
-          # المفتاح مرتبط بنظام التشغيل وإصدار الأصول (v1.0.0)
-          key: ${{ runner.os }}-vendor-v1.0.0
-
-      # --- 📥 تحميل الأصول فقط في حال عدم وجودها في الكاش ---
-      - name: 📥 Download Assets from Release
-        if: steps.cache-vendor.outputs.cache-hit != 'true'
-        run: |
-          echo "❌ لم يتم العثور على كاش، جاري التحميل من Release..."
-          gh release download v1.0.0 -p "vendor_assets.zip"
-          unzip -q vendor_assets.zip -d vendor_extracted
-          rm vendor_assets.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # --- 🛠️ تجهيز البيئة ومنح الصلاحيات ---
-      - name: 🔑 Fix Executable Permissions
+      # --- 🚀 المرحلة الأهم: جلب الترسانة الجاهزة ---
+      - name: 📥 Download Engine Assets
         run: |
-          find vendor_extracted -type f -name "node" -exec chmod +x {} +
-          find vendor_extracted -type f -name "chrome" -exec chmod +x {} +
-          find vendor_extracted -type f -name "firefox" -exec chmod +x {} +
+          echo "📥 جاري تحميل الترسانة من الـ Release v1.0.0..."
+          gh release download v1.0.0 -p "vendor_assets.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- 🏃 تشغيل المحرك الأساسي ---
-      - name: 🤖 Execute Gemini Automation
+      - name: 🗜️ Fast Unzip Assets
+        run: |
+          echo "🔓 فك ضغط المحركات والمكتبات..."
+          # فك الضغط إلى المجلد الذي يتوقعه ملف main.py
+          unzip -qn vendor_assets.zip -d vendor_extracted
+          # حذف الملف المضغوط فوراً لتوفير مساحة الرام والقرص
+          rm vendor_assets.zip
+
+      # --- 🔑 منح صلاحيات التنفيذ للمحركات ---
+      - name: 🛡️ Fix Executable Permissions
+        run: |
+          echo "🔑 تفعيل صلاحيات المحركات..."
+          # نمنح صلاحية التنفيذ لكل ما هو داخل مجلد browsers و camoufox_cache
+          find vendor_extracted/browsers -type f -exec chmod +x {} +
+          find vendor_extracted/camoufox_cache -type f -exec chmod +x {} +
+          # التأكد من صلاحيات تنفيذ بايثون والمكتبات إذا لزم الأمر
+          chmod -R +x vendor_extracted/python || true
+
+      # --- 🤖 تشغيل المحرك الأساسي ---
+      - name: ⚡ Execute Gemini Automation
         env:
           GEMINI_COOKIES: ${{ secrets.GEMINI_COOKIES }}
-          
-          CAMOUFOX_CACHE_DIR: ${{ github.workspace }}/vendor_extracted/camoufox_cache
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/vendor_extracted/browsers
-        run: python main.py "${{ github.event.inputs.prompt }}"
+          # التأكد من أن البيئة تعرف مكان المجلد المستخرج
+          PYTHONPATH: ${{ github.workspace }}/vendor_extracted/python
+        run: |
+          python main.py "${{ github.event.inputs.prompt }}"
 
       # --- 📤 رفع النتيجة النهائية ---
       - name: 📄 Upload Result
-        if: always() # لضمان رفع النتيجة حتى لو حدث خطأ تقني
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gemini-json
           path: result.json
-          retention-days: 1 # حذف النتائج القديمة تلقائياً بعد يوم لتوفير المساحة
+          retention-days: 1 # صلاحية الملف يوم واحد فقط لتوفير المساحة
