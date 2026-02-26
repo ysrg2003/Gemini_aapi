@@ -4,25 +4,20 @@ import shutil
 import sys
 
 def setup():
-    # تنظيف المجلدات القديمة لضمان بناء "نظيف"
     vendor_dir = "vendor"
     if os.path.exists(vendor_dir):
-        print(f"🗑️ تنظيف المجلد القديم...")
         shutil.rmtree(vendor_dir)
     
-    python_dir = os.path.join(vendor_dir, "python")
-    browsers_dir = os.path.join(vendor_dir, "browsers")
+    python_dir = os.path.abspath(os.path.join(vendor_dir, "python"))
+    browsers_dir = os.path.abspath(os.path.join(vendor_dir, "browsers"))
     
     os.makedirs(python_dir, exist_ok=True)
     os.makedirs(browsers_dir, exist_ok=True)
     
-    print("⏳ بدأت عملية بناء الترسانة (Assets Building)...")
-    
-    # 1. تثبيت المكتبات الأساسية
-    # استخدمنا --no-cache-dir لضمان عدم سحب نسخ قديمة ومعطوبة
+    print("⏳ بدأت عملية بناء الترسانة...")
+
+    # 1. تثبيت المكتبات
     libs = ["playwright", "camoufox", "wheel", "setuptools"]
-    
-    print(f"📦 تثبيت المكتبات البرمجية: {', '.join(libs)}")
     subprocess.run([
         sys.executable, "-m", "pip", "install", 
         *libs, 
@@ -30,37 +25,34 @@ def setup():
         "--no-cache-dir"
     ], check=True)
 
-    # 2. إعداد مسار المتصفحات وتحميلها
-    # نضع المتصفحات داخل مجلد vendor لتدخل في ملف الـ ZIP
-    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.abspath(browsers_dir)
+    # --- الجزء السحري: إضافة المسار للبيئة الحالية ---
+    # نخبر النظام أن المكتبات موجودة في المجلد الجديد ليتمكن من تشغيلها
+    env = os.environ.copy()
+    env["PYTHONPATH"] = python_dir + os.pathsep + env.get("PYTHONPATH", "")
+    env["PLAYWRIGHT_BROWSERS_PATH"] = browsers_dir
+
+    print("🌐 تحميل محركات المتصفح (Chromium)...")
     
-    print("🌐 تحميل محركات المتصفح (Chromium & Camoufox Fetch)...")
-    # تحميل Chromium فقط لتقليل الحجم (فهو يكفي لـ Gemini)
+    # 2. تحميل الكروميوم باستخدام المسار المحقون
     subprocess.run([
         sys.executable, "-m", "playwright", "install", "chromium"
-    ], check=True)
+    ], env=env, check=True)
     
-    # تحميل بيانات التخفي الخاصة بـ Camoufox
+    # 3. تحميل بيانات Camoufox
+    print("🦊 Fetching Camoufox data...")
     subprocess.run([
         sys.executable, "-m", "camoufox", "fetch"
-    ], check=True)
+    ], env=env, check=True)
 
-    # 3. تنظيف المجلدات المؤقتة لتقليل حجم الـ ZIP
-    print("🧹 تنظيف ملفات الكاش غير الضرورية...")
+    # 4. تنظيف وضغط
+    print("🧹 تنظيف وضغط الملفات...")
     for root, dirs, files in os.walk(python_dir):
-        for d in dirs:
-            if d == "__pycache__":
-                shutil.rmtree(os.path.join(root, d))
+        if "__pycache__" in dirs:
+            shutil.rmtree(os.path.join(root, "__pycache__"))
 
-    # 4. الضغط النهائي
-    print("🗜️ جاري ضغط الترسانة إلى vendor_assets.zip...")
-    # نقوم بالضغط بحيث يكون محتوى مجلد vendor هو جذور الملف المضغوط
     shutil.make_archive("vendor_assets", 'zip', vendor_dir)
-    
-    # تنظيف المجلد بعد الضغط لتوفير مساحة في الـ Runner
     shutil.rmtree(vendor_dir)
-    
-    print("✅ اكتملت المهمة! الملف جاهز للرفع إلى GitHub Releases.")
+    print("✅ تم إنشاء vendor_assets.zip بنجاح!")
 
 if __name__ == "__main__":
     setup()
