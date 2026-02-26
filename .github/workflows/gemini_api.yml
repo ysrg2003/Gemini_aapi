@@ -20,29 +20,27 @@ jobs:
 
       - name: 📥 Download & Inject Assets
         run: |
-          echo "📥 جاري سحب الترسانة من الـ Release..."
-          # تحميل الملف المضغوط
-          gh release download v1.0.0 -p "vendor_assets.zip"
+          echo "📥 سحب الترسانة المضغوطة بـ Zstd..."
+          gh release download v1.0.0 -p "vendor_assets.tar.zst"
           
-          echo "📂 فك ضغط الملفات..."
-          unzip -qo vendor_assets.zip
+          echo "⚡ فك الضغط فائق السرعة..."
+          # -x: extract, -I: zstd, -f: file
+          mkdir -p .temp_vendor
+          tar -I zstd -xf vendor_assets.tar.zst -C .
           
-          echo "🔗 ربط المحرك بمسار النظام الافتراضي..."
-          # إنشاء المسار الأب في النظام
+          # ملاحظة: بما أننا ضغطنا المحتويات مباشرة، الملفات ستنتشر في المجلد الحالي
+          # (python, browsers, camoufox_cache)
+          
+          echo "🔗 ربط المحرك..."
           mkdir -p /home/runner/.cache
-          
-          # 🚀 الربط التشعبي: أهم خطوة لمنع إعادة التحميل
-          # نقوم بربط المجلد المستخرج بالمسار الذي يتوقعه Camoufox
           ln -sf $(pwd)/camoufox_cache /home/runner/.cache/camoufox
           
-          # إعطاء صلاحيات التنفيذ للمحركات
           chmod -R +x /home/runner/.cache/camoufox 2>/dev/null || true
           chmod -R +x browsers/ 2>/dev/null || true
-          
-          echo "✅ الترسانة جاهزة للعمل."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      
       - name: 🚀 Run Automation
         env:
           GEMINI_COOKIES: ${{ secrets.GEMINI_COOKIES }}
