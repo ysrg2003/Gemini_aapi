@@ -16,6 +16,7 @@
             --border: #dee2e6; --accent: linear-gradient(135deg, #1a73e8, #701af0);
             --shadow: 0 4px 20px rgba(0,0,0,0.08);
             --code-bg: #1e1e1e; --code-text: #d4d4d4;
+            --code-header: #333333;
         }
 
         [data-theme="dark"] {
@@ -23,6 +24,7 @@
             --secondary: #2d2f31; --user-bubble: #004a77; --bot-bubble: #1e1f20;
             --border: #444746; --shadow: 0 4px 25px rgba(0,0,0,0.3);
             --code-bg: #000000; --code-text: #e3e3e3;
+            --code-header: #1a1a1a;
         }
 
         * { box-sizing: border-box; transition: background 0.25s, color 0.25s; }
@@ -30,17 +32,12 @@
         body {
             font-family: 'IBM Plex Sans Arabic', sans-serif;
             background-color: var(--bg); color: var(--text);
-            margin: 0; 
-            display: flex; 
-            flex-direction: column;
-            height: 100vh; 
-            height: 100dvh;
-            overflow: hidden;
+            margin: 0; display: flex; flex-direction: column;
+            height: 100vh; height: 100dvh; overflow: hidden;
         }
 
         header {
-            flex-shrink: 0;
-            padding: 12px 24px; display: flex; justify-content: space-between;
+            flex-shrink: 0; padding: 12px 24px; display: flex; justify-content: space-between;
             align-items: center; background: var(--card); border-bottom: 1px solid var(--border);
             box-shadow: var(--shadow); z-index: 1000;
         }
@@ -65,80 +62,64 @@
         .input-field input { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--secondary); color: var(--text); }
 
         #chat-viewport {
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px 10%; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            scroll-behavior: smooth;
+            flex: 1; overflow-y: auto; padding: 20px 10%; 
+            display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth;
         }
 
         .msg-container { display: flex; flex-direction: column; max-width: 100%; animation: fadeIn 0.3s ease; }
         .user-align { align-self: flex-start; }
         .bot-align { align-self: flex-end; width: 100%; align-items: flex-end; }
 
-        /* --- القسم المعدل بناءً على طلبك --- */
         .bubble {
-            padding: 16px 22px; 
-            border-radius: 20px; 
-            font-size: 15.5px; 
-            line-height: 1.7;
-            word-wrap: break-word; 
-            overflow-wrap: break-word; 
-            position: relative;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            max-width: 100%;
+            padding: 16px 22px; border-radius: 20px; font-size: 15.5px; line-height: 1.7;
+            word-wrap: break-word; overflow-wrap: break-word; position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); max-width: 100%;
         }
 
         .user-align .bubble { background: var(--user-bubble); border-bottom-right-radius: 4px; }
         .bot-align .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-bottom-left-radius: 4px; max-width: 92%; }
 
-        /* تنسيق الأكواد البرمجية (Blocks) */
+        /* --- حاوية الكود المطور --- */
+        .code-wrapper {
+            margin: 15px 0; border-radius: 10px; overflow: hidden;
+            border: 1px solid var(--border); background: var(--code-bg);
+            direction: ltr; /* اتجاه الكود من اليسار */
+        }
+
+        .code-header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 15px; background: var(--code-header);
+            color: #bbb; font-size: 12px; font-family: monospace;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .copy-btn-snippet {
+            background: rgba(255,255,255,0.1); border: none; color: #fff;
+            padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px;
+        }
+        .copy-btn-snippet:hover { background: rgba(255,255,255,0.2); }
+
         .bubble pre { 
-            background: var(--code-bg); 
-            color: var(--code-text); 
-            padding: 15px; 
-            border-radius: 10px; 
-            overflow-x: auto; 
-            direction: ltr; 
-            margin: 12px 0;
-            border: 1px solid #333;
-            max-width: 100%; 
-            white-space: pre-wrap; 
-            word-break: break-all;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
+            margin: 0 !important; padding: 15px; overflow-x: auto;
+            color: var(--code-text); font-family: 'Consolas', monospace;
+            font-size: 14px; line-height: 1.5; background: transparent !important;
         }
 
-        /* تنسيق الأكواد المضمنة (Inline Code) */
         .bubble code { 
-            font-family: 'Consolas', 'Monaco', monospace; 
-            background: rgba(0,0,0,0.08); 
-            padding: 2px 6px; 
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #d81b60; /* لون مميز للأكواد الصغيرة في الوضع الفاتح */
+            font-family: 'Consolas', monospace; padding: 2px 6px; 
+            border-radius: 4px; font-size: 0.9em;
         }
 
-        [data-theme="dark"] .bubble code { 
-            background: rgba(255,255,255,0.15); 
-            color: #ffab91;
-        }
-        /* --- نهاية القسم المعدل --- */
+        /* منع تداخل ألوان marked الافتراضية مع HTML بايثون */
+        .bot-align .bubble p { margin-top: 0; }
 
         .msg-actions { display: flex; gap: 10px; margin-top: 5px; margin-bottom: 10px; }
         .action-link { font-size: 12px; color: var(--primary); cursor: pointer; font-weight: bold; }
 
         .footer-area {
-            flex-shrink: 0;
-            padding: 15px; 
-            background: var(--card); 
-            border-top: 1px solid var(--border);
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-shrink: 0; padding: 15px; background: var(--card); 
+            border-top: 1px solid var(--border); width: 100%;
+            display: flex; flex-direction: column; align-items: center;
         }
 
         .input-container {
@@ -158,8 +139,6 @@
             width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
-
-        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #status-bar { font-size: 12px; margin-bottom: 8px; color: var(--primary); font-weight: 700; display: none; }
         .loader { width: 12px; height: 12px; border: 2px solid var(--primary); border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; margin-left: 8px; }
@@ -196,7 +175,7 @@
 
 <div id="chat-viewport">
     <div class="msg-container bot-align">
-        <div class="bubble">تم تحديث واجهة الاستخدام بنجاح! تم تطبيق التنسيقات الجديدة للفقاعات والأكواد البرمجية. جرب إرسال كود برمجي لرؤية النتيجة.</div>
+        <div class="bubble">مرحباً بك! تم تحديث النظام لمعالجة الأكواد البرمجية مباشرة من المصدر مع دعم النسخ وتحديد اللغة.</div>
     </div>
 </div>
 
@@ -211,7 +190,6 @@
 </div>
 
 <script>
-    // ... (بقية ملف الـ JavaScript الخاص بك دون تغيير)
     window.onload = () => {
         document.getElementById('ghToken').value = localStorage.getItem('cfg_token') || '';
         document.getElementById('ghRepo').value = localStorage.getItem('cfg_repo') || '';
@@ -237,6 +215,7 @@
         el.style.height = el.scrollHeight + 'px';
     }
 
+    // الدالة المحسنة لمعالجة الرسائل والأكواد
     function createMessage(text, side) {
         const viewport = document.getElementById('chat-viewport');
         const container = document.createElement('div');
@@ -246,7 +225,32 @@
         bubble.className = 'bubble';
         
         if (side === 'bot') {
-            bubble.innerHTML = marked.parse(text);
+            // نضع الـ HTML القادم من بايثون مباشرة
+            bubble.innerHTML = text;
+
+            // معالجة كل بلوك كود <pre> لتحويله لشكل احترافي
+            const preBlocks = bubble.querySelectorAll('pre');
+            preBlocks.forEach(pre => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-wrapper';
+                
+                // تحديد اللغة من كلاسات بايثون أو وضع الافتراضي
+                let langName = 'code';
+                const codeInside = pre.querySelector('code');
+                if(codeInside) {
+                    const classes = Array.from(codeInside.classList);
+                    const langClass = classes.find(c => c.startsWith('language-'));
+                    if(langClass) langName = langClass.replace('language-', '');
+                }
+
+                const header = document.createElement('div');
+                header.className = 'code-header-bar';
+                header.innerHTML = `<span>${langName}</span><button class="copy-btn-snippet" onclick="copySnippet(this)">نسخ</button>`;
+                
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(header);
+                wrapper.appendChild(pre);
+            });
         } else {
             bubble.innerText = text;
         }
@@ -256,7 +260,7 @@
         if(side === 'bot') {
             const actions = document.createElement('div');
             actions.className = 'msg-actions';
-            actions.innerHTML = `<span class="action-link" onclick="copyText(this)">📋 نسخ الرد</span>`;
+            actions.innerHTML = `<span class="action-link" onclick="copyFullResponse(this)">📋 نسخ الرد كاملاً</span>`;
             container.appendChild(actions);
         }
 
@@ -264,11 +268,22 @@
         viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
     }
 
-    async function copyText(el) {
+    // دالة نسخ الكود البرمجي فقط
+    async function copySnippet(btn) {
+        const codeElement = btn.parentElement.nextElementSibling.querySelector('code') || btn.parentElement.nextElementSibling;
+        const text = codeElement.innerText;
+        await navigator.clipboard.writeText(text);
+        const originalText = btn.innerText;
+        btn.innerText = "✅ تم";
+        setTimeout(() => btn.innerText = originalText, 2000);
+    }
+
+    // دالة نسخ النص الكامل للرد
+    async function copyFullResponse(el) {
         const text = el.parentElement.previousElementSibling.innerText;
         await navigator.clipboard.writeText(text);
         el.innerText = "✅ تم النسخ";
-        setTimeout(() => el.innerText = "📋 نسخ الرد", 2000);
+        setTimeout(() => el.innerText = "📋 نسخ الرد كاملاً", 2000);
     }
 
     async function startProcess() {
@@ -276,7 +291,7 @@
         const repo = document.getElementById('ghRepo').value;
         const prompt = document.getElementById('promptInput').value.trim();
 
-        if(!token || !repo || !prompt) return alert("تأكد من إعداد التوكن والمستودع!");
+        if(!token || !repo || !prompt) return alert("تأكد من إعداد التוكن والمستودع!");
 
         localStorage.setItem('cfg_token', token);
         localStorage.setItem('cfg_repo', repo);
