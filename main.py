@@ -70,7 +70,7 @@ async def run_gemini_automation(prompt):
             for _ in range(90): 
                 current_text = await page.evaluate(f'''() => {{
                     const els = document.querySelectorAll("{response_selector}");
-                    return els.length > 0 ? els[els.length - 1].innerText : "";
+                    return els.length > 0 ? els[els.length - 1].innerHTML : "";
                 }}''')
                 
                 current_length = len(current_text)
