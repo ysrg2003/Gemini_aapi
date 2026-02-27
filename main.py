@@ -85,7 +85,7 @@ async def run_gemini_automation(prompt):
                     stable_count += 1
                 
                 # إذا استقر الرد لـ 8 ثوانٍ، نعتبره اكتمل
-                if stable_count >= 8:
+                if stable_count >= 10:
                     print(f"✅ تم التقاط الرد المنسق بالكامل.")
                     break
                 
