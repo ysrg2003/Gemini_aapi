@@ -15,12 +15,14 @@
             --secondary: #f1f3f4; --user-bubble: #e8f0fe; --bot-bubble: #ffffff;
             --border: #dee2e6; --accent: linear-gradient(135deg, #1a73e8, #701af0);
             --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --code-bg: #1e1e1e; --code-text: #d4d4d4;
         }
 
         [data-theme="dark"] {
             --bg: #131314; --card: #1e1f20; --text: #e3e3e3; --primary: #8ab4f8;
             --secondary: #2d2f31; --user-bubble: #004a77; --bot-bubble: #1e1f20;
             --border: #444746; --shadow: 0 4px 25px rgba(0,0,0,0.3);
+            --code-bg: #000000; --code-text: #e3e3e3;
         }
 
         * { box-sizing: border-box; transition: background 0.25s, color 0.25s; }
@@ -32,7 +34,7 @@
             display: flex; 
             flex-direction: column;
             height: 100vh; 
-            height: 100dvh; /* الارتفاع الفعلي للجوال لضمان عدم اختفاء العناصر خلف المتصفح */
+            height: 100dvh;
             overflow: hidden;
         }
 
@@ -62,7 +64,6 @@
         .input-field label { font-size: 12px; font-weight: bold; opacity: 0.8; }
         .input-field input { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--secondary); color: var(--text); }
 
-        /* منطقة المحادثة: تأخذ المساحة المتبقية فقط */
         #chat-viewport {
             flex: 1; 
             overflow-y: auto; 
@@ -73,22 +74,62 @@
             scroll-behavior: smooth;
         }
 
-        .msg-container { display: flex; flex-direction: column; max-width: 95%; animation: fadeIn 0.3s ease; }
+        .msg-container { display: flex; flex-direction: column; max-width: 100%; animation: fadeIn 0.3s ease; }
         .user-align { align-self: flex-start; }
         .bot-align { align-self: flex-end; width: 100%; align-items: flex-end; }
 
+        /* --- القسم المعدل بناءً على طلبك --- */
         .bubble {
-            padding: 14px 18px; border-radius: 18px; font-size: 15px; line-height: 1.6;
-            word-wrap: break-word; position: relative;
+            padding: 16px 22px; 
+            border-radius: 20px; 
+            font-size: 15.5px; 
+            line-height: 1.7;
+            word-wrap: break-word; 
+            overflow-wrap: break-word; 
+            position: relative;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            max-width: 100%;
         }
+
         .user-align .bubble { background: var(--user-bubble); border-bottom-right-radius: 4px; }
-        .bot-align .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-bottom-left-radius: 4px; max-width: 90%; }
+        .bot-align .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-bottom-left-radius: 4px; max-width: 92%; }
+
+        /* تنسيق الأكواد البرمجية (Blocks) */
+        .bubble pre { 
+            background: var(--code-bg); 
+            color: var(--code-text); 
+            padding: 15px; 
+            border-radius: 10px; 
+            overflow-x: auto; 
+            direction: ltr; 
+            margin: 12px 0;
+            border: 1px solid #333;
+            max-width: 100%; 
+            white-space: pre-wrap; 
+            word-break: break-all;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+
+        /* تنسيق الأكواد المضمنة (Inline Code) */
+        .bubble code { 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            background: rgba(0,0,0,0.08); 
+            padding: 2px 6px; 
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #d81b60; /* لون مميز للأكواد الصغيرة في الوضع الفاتح */
+        }
+
+        [data-theme="dark"] .bubble code { 
+            background: rgba(255,255,255,0.15); 
+            color: #ffab91;
+        }
+        /* --- نهاية القسم المعدل --- */
 
         .msg-actions { display: flex; gap: 10px; margin-top: 5px; margin-bottom: 10px; }
         .action-link { font-size: 12px; color: var(--primary); cursor: pointer; font-weight: bold; }
 
-        /* منطقة الإدخال: ثابتة في التدفق وليست فوق العناصر */
         .footer-area {
             flex-shrink: 0;
             padding: 15px; 
@@ -155,7 +196,7 @@
 
 <div id="chat-viewport">
     <div class="msg-container bot-align">
-        <div class="bubble">تم تحديث واجهة الاستخدام بنجاح! تم إصلاح مشكلة تداخل العناصر وضبط ارتفاع الصفحة.</div>
+        <div class="bubble">تم تحديث واجهة الاستخدام بنجاح! تم تطبيق التنسيقات الجديدة للفقاعات والأكواد البرمجية. جرب إرسال كود برمجي لرؤية النتيجة.</div>
     </div>
 </div>
 
@@ -170,7 +211,7 @@
 </div>
 
 <script>
-    // تهيئة البيانات عند التحميل
+    // ... (بقية ملف الـ JavaScript الخاص بك دون تغيير)
     window.onload = () => {
         document.getElementById('ghToken').value = localStorage.getItem('cfg_token') || '';
         document.getElementById('ghRepo').value = localStorage.getItem('cfg_repo') || '';
@@ -220,7 +261,6 @@
         }
 
         viewport.appendChild(container);
-        // تمرير تلقائي للأسفل عند إضافة رسالة جديدة
         viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
     }
 
