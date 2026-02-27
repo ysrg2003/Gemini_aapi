@@ -81,8 +81,8 @@ async def run_gemini_automation(prompt):
                 elif current_length > 0:
                     stable_count += 1
                 
-                # إذا استقر النص لـ 4 ثوانٍ متتالية نعتبره انتهى
-                if stable_count >= 4:
+                # إذا استقر النص ل 10 ثوانٍ متتالية نعتبره انتهى
+                if stable_count >= 10:
                     print(f"✅ اكتمل استخراج الرد بنجاح.")
                     break
                 
